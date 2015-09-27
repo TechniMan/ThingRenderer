@@ -37,7 +37,7 @@ void GraphicsApp::Update()
 	_elapsedTime = (float)time - (float)timeStart;
 
 	// Update view matrix
-	eye = DirectX::XMVectorSet(-3.0f, 2.0f, -3.0f, 1.0f);
+	eye = DirectX::XMVectorSet(0.0f, -2.0f, -3.0f, 1.0f);
 	DirectX::XMVECTOR at = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
 	DirectX::XMVECTOR up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	DirectX::XMStoreFloat4x4(&_viewMatrix, DirectX::XMMatrixLookAtLH(eye, at, up));
@@ -233,7 +233,7 @@ HRESULT GraphicsApp::Initialise(HINSTANCE hInstance, HWND hWnd, UINT width, UINT
 	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	sampDesc.MinLOD = 0;
+	sampDesc.MinLOD = 0.0f;
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	hr = _device->CreateSamplerState(&sampDesc, &_samplerState);
 	if (FAILED(hr))

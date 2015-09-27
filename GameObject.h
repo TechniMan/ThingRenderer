@@ -26,7 +26,11 @@ class GameObject
 private:
 	ID3D11Buffer * _vertexBuffer = nullptr;
 	ID3D11Buffer * _indexBuffer = nullptr;
-	ID3D11ShaderResourceView * _texture = nullptr;
+
+	ID3D11ShaderResourceView * _textureDiffuse = nullptr;
+	ID3D11ShaderResourceView * _textureNormal = nullptr;
+	ID3D11ShaderResourceView * _textureSpecular = nullptr;
+
 	DirectX::XMMATRIX _worldMatrix;
 
 public:

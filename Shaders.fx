@@ -1,4 +1,6 @@
-Texture2D txObject : register(t0);
+Texture2D txDiffuse : register(t0);
+Texture2D txNormal : register(t1);
+Texture2D txSpecular : register(t2);
 
 SamplerState samLinear : register(s0);
 
@@ -90,7 +92,9 @@ float4 PS(VS_OUT pixel) : SV_Target
 	float3 normal = normalize(pixel.NormW);
 	
 	// Get texture data
-	float4 texDiffuse = txObject.Sample(samLinear, pixel.Tex);
+	float4 texDiffuse = txDiffuse.Sample(samLinear, pixel.Tex);
+	//float4 texNormal = txNormal.Sample(samLinear, pixel.Tex);
+	float4 texSpecular = txSpecular.Sample(samLinear, pixel.Tex);
 
 	// Ambient
 	float3 ambient = (light.AmbientLight.rgb * AmbientMtrl.rgb);
@@ -100,14 +104,14 @@ float4 PS(VS_OUT pixel) : SV_Target
 	float3 diffuse = (light.DiffuseLight.rgb * DiffuseMtrl.rgb) * diffuseAmount;
 
 	// Specular
-	/*float3 r = reflect(-lightDirection, normal);
-	float3 toEye = EyePosW - pixel.PosW;
+	float3 r = reflect(-lightDirection, normal);
+	float3 toEye = normalize(EyePosW - pixel.PosW);
 	float  specularAmount = pow(max(dot(r, toEye), 0.0f), light.SpecularPower);
 	if (diffuseAmount <= 0.0f) specularAmount = 0.0f;
-	float3 specular = (light.SpecularLight.rgb * SpecularMtrl.rgb) * specularAmount;*/
+	float3 specular = (light.SpecularLight.rgb * SpecularMtrl.rgb) * specularAmount * texSpecular.rgb;
 
 	// Final colour
-	float3 finalColour = (texDiffuse.rgb * (diffuse + ambient));// + specular;
+	float3 finalColour = (texDiffuse.rgb * (diffuse + ambient)) + specular;
 
 	return float4(finalColour.r, finalColour.g, finalColour.b, texDiffuse.a);
 }

@@ -9,7 +9,9 @@ GameObject::GameObject()
 
 GameObject::~GameObject()
 {
-	SAFE_RELEASE(_texture);
+	SAFE_RELEASE(_textureSpecular);
+	SAFE_RELEASE(_textureNormal);
+	SAFE_RELEASE(_textureDiffuse);
 	SAFE_RELEASE(_indexBuffer);
 	SAFE_RELEASE(_vertexBuffer);
 }
@@ -21,7 +23,24 @@ HRESULT GameObject::Initialise(ID3D11Device * device)
 	_worldMatrix = DirectX::XMMatrixIdentity();
 
 	// Load texture
-	DirectX::CreateDDSTextureFromFile(device, L"Assets\\Crate_COLOR.dds", nullptr, &_texture);
+	HRESULT hr = DirectX::CreateDDSTextureFromFile(device, L"Assets\\Crate_COLOUR.dds", nullptr, &_textureDiffuse);
+	if (FAILED(hr))
+	{
+		Error(hr);
+		return hr;
+	}
+	hr = DirectX::CreateDDSTextureFromFile(device, L"Assets\\Crate_NORMAL.dds", nullptr, &_textureNormal);
+	if (FAILED(hr))
+	{
+		Error(hr);
+		return hr;
+	}
+	hr = DirectX::CreateDDSTextureFromFile(device, L"Assets\\Crate_SPECULAR.dds", nullptr, &_textureSpecular);
+	if (FAILED(hr))
+	{
+		Error(hr);
+		return hr;
+	}
 
 	// Create vertex buffer
 	/*Vertex vertices[] =
@@ -97,7 +116,7 @@ HRESULT GameObject::Initialise(ID3D11Device * device)
 	D3D11_SUBRESOURCE_DATA InitData;
 	ZeroMemory(&InitData, sizeof(InitData));
 	InitData.pSysMem = &vertices[0];
-	HRESULT hr = device->CreateBuffer(&bd, &InitData, &_vertexBuffer);
+	hr = device->CreateBuffer(&bd, &InitData, &_vertexBuffer);
 	if (FAILED(hr))
 	{
 		Error(hr);
@@ -171,7 +190,9 @@ void GameObject::Draw(ID3D11DeviceContext * context, ID3D11Buffer * constantBuff
 	UINT offset = 0;
 	context->IASetVertexBuffers(0, 1, &_vertexBuffer, &stride, &offset);
 	context->IASetIndexBuffer(_indexBuffer, DXGI_FORMAT_R16_UINT, offset);
-	context->PSSetShaderResources(0, 1, &_texture);
+	context->PSSetShaderResources(0, 1, &_textureDiffuse);
+	context->PSSetShaderResources(1, 1, &_textureNormal);
+	context->PSSetShaderResources(2, 1, &_textureSpecular);
 	context->VSSetConstantBuffers(2, 1, &constantBuffer);
 	context->PSSetConstantBuffers(2, 1, &constantBuffer);
 
