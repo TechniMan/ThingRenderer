@@ -22,7 +22,19 @@ HRESULT GameObject::Initialise(ID3D11Device * device)
 	// Initialise world matrix
 	_worldMatrix = DirectX::XMMatrixIdentity();
 
-	// Load texture
+	// Load textures
+	/*ID3D11Texture2D * texture = nullptr;
+	CD3D11_TEXTURE2D_DESC texDesc = CD3D11_TEXTURE2D_DESC(DXGI_FORMAT_R8G8B8A8_UNORM, 2U, 2U, 1U, 1U);
+	D3D11_SUBRESOURCE_DATA texData;
+	ZeroMemory(&texData, sizeof(D3D11_SUBRESOURCE_DATA));
+	unsigned char tex [] = { 255, 0, 0, 255,
+					 	0, 255, 0, 255,
+						 0, 0, 255, 255,
+						 255, 255, 255, 255 };
+	texData.pSysMem = &tex[0];
+	texData.SysMemPitch = sizeof(unsigned char) * ARRAYSIZE(tex);
+	HRESULT hr = device->CreateTexture2D(&texDesc, &texData, &texture);
+	hr = device->CreateShaderResourceView(texture, NULL, &_textureDiffuse);*/
 	HRESULT hr = DirectX::CreateDDSTextureFromFile(device, L"Assets\\Crate_COLOUR.dds", nullptr, &_textureDiffuse);
 	if (FAILED(hr))
 	{
@@ -165,7 +177,7 @@ HRESULT GameObject::Initialise(ID3D11Device * device)
 void GameObject::Update(float time)
 {
 	// Update world matrix
-	float timef = time / 1000.0f;
+	float timef = time / 2000.0f;
 	_worldMatrix = DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f) * DirectX::XMMatrixRotationRollPitchYaw(0.0f, timef, 0.0f) * DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f)
 				* DirectX::XMMatrixRotationRollPitchYaw(0.0f, 0.0f, 0.0f);
 }

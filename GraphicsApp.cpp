@@ -60,7 +60,6 @@ void GraphicsApp::Draw()
 	}
 	_deviceContext->ClearDepthStencilView(_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-
 	CBFrame cbFrame;
 	DirectX::XMStoreFloat3(&cbFrame.eyePosW, eye);
 	cbFrame.light.ambientLight = DirectX::XMFLOAT4(0.5, 0.5, 0.5f, 1.0f);
@@ -102,7 +101,7 @@ void GraphicsApp::Draw()
 
 	_object.Draw(_deviceContext, _cbObject);
 
-	_deviceContext->DrawIndexed(36, 0, 0);
+	//_deviceContext->DrawIndexed(36, 0, 0);
 	
 	_swapChain->Present(0, 0);
 }
@@ -111,7 +110,7 @@ void GraphicsApp::Draw()
 HRESULT GraphicsApp::Initialise(HINSTANCE hInstance, HWND hWnd, UINT width, UINT height)
 {
 	UINT creationFlags = 0;
-#if defined(_DEBUG)
+#ifdef _DEBUG
 	// If the project is in a debug build, enable the debug layer.
 	creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
@@ -139,6 +138,32 @@ HRESULT GraphicsApp::Initialise(HINSTANCE hInstance, HWND hWnd, UINT width, UINT
 	{
 		Error(hr);
 		return hr;
+	}
+	ID3D11Debug *d3dDebug = nullptr;
+	if (SUCCEEDED(_device->QueryInterface(__uuidof(ID3D11Debug), (void**)&d3dDebug)))
+	{
+		ID3D11InfoQueue *d3dInfoQueue = nullptr;
+		if (SUCCEEDED(d3dDebug->QueryInterface(__uuidof(ID3D11InfoQueue), (void**)&d3dInfoQueue)))
+		{
+#ifdef _DEBUG
+			d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, true);
+			d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, true);
+#endif
+
+			D3D11_MESSAGE_ID hide[] =
+			{
+				D3D11_MESSAGE_ID_SETPRIVATEDATA_CHANGINGPARAMS,
+				// Add more message IDs here as needed
+			};
+
+			D3D11_INFO_QUEUE_FILTER filter;
+			memset(&filter, 0, sizeof(filter));
+			filter.DenyList.NumIDs = _countof(hide);
+			filter.DenyList.pIDList = hide;
+			d3dInfoQueue->AddStorageFilterEntries(&filter);
+			d3dInfoQueue->Release();
+		}
+		d3dDebug->Release();
 	}
 	
 	ID3D11Texture2D * backBuffer = nullptr;
@@ -210,12 +235,25 @@ HRESULT GraphicsApp::Initialise(HINSTANCE hInstance, HWND hWnd, UINT width, UINT
 
 	
 	hr = InitShaders();
+	if (FAILED(hr))
+	{
+		Error(hr);
+		return hr;
+	}
 
 	hr = InitBuffers();
-
+	if (FAILED(hr))
+	{
+		Error(hr);
+		return hr;
+	}
 
 	hr = _object.Initialise(_device);
-
+	if (FAILED(hr))
+	{
+		Error(hr);
+		return hr;
+	}
 
 	// Load the Texture
 	/*hr = DirectX::CreateDDSTextureFromFile(_device, L"Assets\\Crate_COLOR.dds", nullptr, &_texture);
